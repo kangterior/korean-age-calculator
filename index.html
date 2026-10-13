@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korean Age Calculator — Korean Age vs International Age</title>
+<meta name="description" content="Free Korean age calculator. Enter a birthday to see your international age (man-nai), traditional Korean counting age, and year age, plus your Chinese zodiac animal. Explains Korea's June 2023 age law.">
+<link rel="canonical" href="https://kangterior.github.io/korean-age-calculator/">
+<meta property="og:title" content="Korean Age Calculator">
+<meta property="og:description" content="International age, Korean counting age and year age — side by side, in one click.">
+<style>
+  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e7ee; --bg:#f7f8fb; --card:#fff; --accent:#d6336c; --ok:#2b8a3e; --bad:#c92a2a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+  main { max-width:640px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.7rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:16px; }
+  label { display:block; font-weight:600; margin:10px 0 6px; }
+  input[type=date] { width:100%; padding:12px; font-size:1rem; border:1px solid var(--line); border-radius:10px; }
+  button { cursor:pointer; border:0; border-radius:10px; padding:12px 16px; font-size:1rem; font-weight:600; }
+  .go { background:var(--accent); color:#fff; width:100%; margin-top:14px; }
+  .ghost { background:#eef1f6; color:var(--ink); margin:4px 4px 0 0; font-size:.9rem; padding:8px 12px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px; }
+  .tile { background:var(--bg); border-radius:12px; padding:12px; text-align:center; }
+  .tile b { display:block; font-size:2rem; }
+  .tile span { color:var(--muted); font-size:.85rem; }
+  .note { color:var(--muted); font-size:.92rem; }
+  .ok { color:var(--ok); font-weight:700; } .bad { color:var(--bad); font-weight:700; }
+  h2 { font-size:1.15rem; margin:22px 0 8px; }
+  details { border-top:1px solid var(--line); padding:10px 0; }
+  summary { font-weight:600; cursor:pointer; }
+  footer { color:var(--muted); font-size:.8rem; text-align:center; margin-top:28px; }
+  @media (max-width:420px){ .grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Korean Age Calculator</h1>
+  <p class="sub">Your international age, traditional Korean age and “year age” — side by side.</p>
+
+  <div class="card">
+    <label for="birth">Birthday</label>
+    <input type="date" id="birth" value="2000-06-15">
+    <label for="ref">As of</label>
+    <input type="date" id="ref">
+    <button class="go" id="calc">Calculate</button>
+  </div>
+
+  <div class="card" id="out" hidden>
+    <div class="grid">
+      <div class="tile"><span>International age<br>(man-nai)</span><b id="intl">–</b><span>used for most laws since June 28, 2023</span></div>
+      <div class="tile"><span>Korean counting age<br>(se-neun-nai)</span><b id="korean">–</b><span>1 at birth, +1 every New Year</span></div>
+      <div class="tile"><span>Year age<br>(yeon-nai)</span><b id="year">–</b><span>current year − birth year</span></div>
+    </div>
+    <p class="note" id="extra"></p>
+  </div>
+
+  <div class="card">
+    <strong>Check the math</strong>
+    <p class="note">Three fixed examples. Each should say <span class="ok">Match</span>.</p>
+    <button class="ghost" data-ex="0">Example 1</button>
+    <button class="ghost" data-ex="1">Example 2</button>
+    <button class="ghost" data-ex="2">Example 3</button>
+    <p class="note" id="check"></p>
+  </div>
+
+  <h2>What is “Korean age”?</h2>
+  <details open><summary>Three ways Korea has counted age</summary>
+    <p><b>International age</b> is the age most of the world uses: 0 at birth, +1 on each birthday.
+    <b>Korean counting age</b> starts at 1 at birth and everyone adds a year on January 1st, so a baby born on December 31 turns 2 the next day.
+    <b>Year age</b> is simply this year minus your birth year.</p>
+  </details>
+  <details><summary>What changed in June 2023?</summary>
+    <p>From June 28, 2023, South Korea standardized on international age for legal and administrative use.
+    A few rules (for example some youth-protection and military-service rules) still count by year, and many people still use counting age in daily conversation.</p>
+  </details>
+  <details><summary>Why is my Korean age 1–2 years higher?</summary>
+    <p>Counting age adds 1 at birth and adds the next year on January 1st instead of on your birthday — so before your birthday it is 2 higher than international age, after your birthday 1 higher.</p>
+  </details>
+
+  <footer>Free tool · no sign-up · runs entirely in your browser. Nothing you enter is sent anywhere.</footer>
+</main>
+<script>
+const ANIMALS = ["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"];
+function parse(s){ const [y,m,d] = s.split("-").map(Number); return {y,m,d}; }
+function ages(birth, ref){
+  const b = parse(birth), r = parse(ref);
+  let intl = r.y - b.y;
+  if (r.m < b.m || (r.m === b.m && r.d < b.d)) intl -= 1;
+  return { intl, korean: r.y - b.y + 1, year: r.y - b.y };
+}
+function today(){ const t = new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+const birthEl = document.getElementById("birth"), refEl = document.getElementById("ref");
+refEl.value = today();
+function show(){
+  if (!birthEl.value || !refEl.value) return;
+  if (birthEl.value > refEl.value) { alert("Birthday must be on or before the 'As of' date."); return; }
+  const a = ages(birthEl.value, refEl.value), b = parse(birthEl.value);
+  document.getElementById("intl").textContent = a.intl;
+  document.getElementById("korean").textContent = a.korean;
+  document.getElementById("year").textContent = a.year;
+  document.getElementById("extra").textContent =
+    "Chinese zodiac by birth year: " + ANIMALS[b.y % 12] + " (the lunar new year can shift this for January–February birthdays).";
+  document.getElementById("out").hidden = false;
+}
+document.getElementById("calc").onclick = show;
+// 고정 예시 셋 — 손으로 셈한 정답과 대조한다(생일 전·생일 당일·연말 출생 다음 날)
+const EX = [
+  { birth:"2000-06-15", ref:"2026-06-14", want:{intl:25, korean:27, year:26} },
+  { birth:"2000-06-15", ref:"2026-06-15", want:{intl:26, korean:27, year:26} },
+  { birth:"2025-12-31", ref:"2026-01-01", want:{intl:0,  korean:2,  year:1 } },
+];
+document.querySelectorAll("[data-ex]").forEach(btn => btn.onclick = () => {
+  const e = EX[+btn.dataset.ex], got = ages(e.birth, e.ref);
+  const ok = got.intl === e.want.intl && got.korean === e.want.korean && got.year === e.want.year;
+  birthEl.value = e.birth; refEl.value = e.ref; show();
+  document.getElementById("check").innerHTML = `Born ${e.birth}, as of ${e.ref}: expected ${e.want.intl}/${e.want.korean}/${e.want.year}, got ${got.intl}/${got.korean}/${got.year} — ` +
+    (ok ? '<span class="ok">Match</span>' : '<span class="bad">Mismatch</span>');
+});
+show();
+</script>
+</body>
+</html>
